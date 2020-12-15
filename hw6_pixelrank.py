@@ -58,7 +58,7 @@ for l in np.arange(lam.shape[0]):
 
 """
 Find most important pixels
-Take the Top Ten for each label taken from the average of weightings for all regularizations
+Average the weightings for each pixel across all regularizations and then take the top 10
 """
 X_Average = np.zeros((X_regLasso.shape[1],X_regLasso.shape[2]))
 for k in np.arange(X_regLasso.shape[1]): #numLabels
@@ -67,20 +67,14 @@ for k in np.arange(X_regLasso.shape[1]): #numLabels
 
 print(np.shape(X_Average))
 
-LabelOne_TopTen = np.zeros((2,10))
-LabelTwo_TopTen = np.zeros((2,10))
-LabelThree_TopTen = np.zeros((2,10))
-LabelFour_TopTen = np.zeros((2,10))
-LabelFive_TopTen = np.zeros((2,10))
-LabelSix_TopTen = np.zeros((2,10))
-LabelSeven_TopTen = np.zeros((2,10))
-LabelEight_TopTen = np.zeros((2,10))
-LabelNine_TopTen = np.zeros((2,10))
-LabelZero_TopTen = np.zeros((2,10))
+n_important = 10
+TopTen_ind = np.zeros((LabelTrain.shape[1],n_important)) # axis = 0 represents each of the different labels, the indices of the pixels with the largest weightings for the respective label are stored in ascending order along axis = 1
+for i in np.arange(X_Average.shape[0]):
+    temp_array = X_Average[i,:]
+    temp_ind = np.argpartition(temp_array,-10)[-10:]
+    TopTen_ind[i,:] = temp_ind[np.argsort(temp_array[temp_ind])] # https://stackoverflow.com/questions/6910641/how-do-i-get-indices-of-n-maximum-values-in-a-numpy-array
 
-
-
-
+print(TopTen_ind)
 
 """
 Plotting
