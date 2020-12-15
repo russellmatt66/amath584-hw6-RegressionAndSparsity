@@ -2,6 +2,8 @@
 Matt Russell
 Motivation: AMATH584 HW6-Midterm2
 Date: 12/13/20
+
+Basic script to extract MNIST data and perform some routine regression on it
 """
 import idx2numpy
 import numpy as np
@@ -64,18 +66,18 @@ print(np.shape(ImageTrain))
 x_pseudoinv = np.matmul(np.linalg.pinv(ImageTrain),LabelTrain)
 print(np.shape(x_pseudoinv))
 
-lam1 = 1.0
-lam2 = 1.0
 ## Least Squares Regression
 regLS = linear_model.LinearRegression().fit(ImageTrain,LabelTrain)
-x_regLS = regLS.coef_
+x_regLS = regLS.coef_ #coef_ attribute contains the loadings (particular solution)
 
 ## Ridge Regression
+lam2 = 1.0
 regRidge = linear_model.Ridge(alpha=lam2)
 regRidge.fit(ImageTrain,LabelTrain)
 x_regRidge = regRidge.coef_
 
 ## LASSO -
+lam1 = 1.0
 regLasso = linear_model.Lasso(alpha=lam1,max_iter = 1000, tol = 0.0001)
 regLasso.fit(ImageTrain,LabelTrain)
 x_regLasso = regLasso.coef_
@@ -88,3 +90,28 @@ print(np.shape(x_regLasso))
 """
 Plotting
 """
+figReg, axs = plt.subplots(2,2)
+
+ax = axs[0,0]
+c = ax.pcolor(x_pseudoinv.T/np.amax(x_pseudoinv))
+ax.set_title('Pseudo-Inverse')
+figReg.colorbar(c, ax=ax)
+
+ax = axs[0,1]
+c = ax.pcolor(x_regLS/np.amax(x_regLS))
+ax.set_title('Least-Squares Regression')
+figReg.colorbar(c, ax=ax)
+
+ax = axs[1,0]
+c = ax.pcolor(x_regRidge/np.amax(x_regRidge))
+ax.set_title('Ridge Regression')
+figReg.colorbar(c, ax=ax)
+
+ax = axs[1,1]
+c = ax.pcolor(x_regLasso/np.amax(x_regLasso))
+ax.set_title('LASSO')
+figReg.colorbar(c, ax=ax)
+
+figReg.suptitle('Normalized Loadings for Several Different Regression Methods')
+figReg.tight_layout()
+plt.show()
