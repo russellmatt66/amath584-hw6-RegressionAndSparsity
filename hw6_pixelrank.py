@@ -20,6 +20,7 @@ file_LabelTest = 't10k-labels-idx1-ubyte'
 ImageTrain_full = idx2numpy.convert_from_file(file_ImageTrain)
 LabelTrain_full = idx2numpy.convert_from_file(file_LabelTrain)
 
+
 numSamples = 50
 numPixels = ImageTrain_full.shape[1] # images are square and isotropic
 TrainSamples = ImageTrain_full.shape[0]
@@ -32,12 +33,11 @@ for j in np.arange(numSamples):
     ImageTrain[j,:,:] = ImageTrain_full[randSample,:,:]
     LabelTrain[j] = LabelTrain_full[randSample]
 
-LabelTrain_temp = np.zeros((LabelTrain.shape[0],10))
+sizeLabels = 10
+LabelTrain_temp = np.zeros((LabelTrain.shape[0],sizeLabels))
 
 # Transform MNIST labels to our labels
 for k in np.arange(LabelTrain.shape[0]):
-    # print(k)
-    # print(LabelTrain[k])
     LabelTrain_temp[k,(LabelTrain[k]+9) % 10] = 1
 
 LabelTrain = LabelTrain_temp
@@ -46,7 +46,7 @@ ImageTrain = ImageTrain.reshape((ImageTrain.shape[0],ImageTrain.shape[1]*ImageTr
 
 ## LASSO for several different regularizations
 lam = np.array([0.1,0.25,0.5,0.75,1.0,2.0])
-X_regLasso = np.zeros((lam.shape[0],LabelTrain.shape[1],ImageTrain.shape[1])) #(numRegularizations,numLabels,numPixels)
+X_regLasso = np.zeros((lam.shape[0],LabelTrain.shape[1],ImageTrain.shape[1])) #(numRegularizations,sizeLabels,numPixels^2), interpretation of axis = 1 is ("1","2",...,"0")
 
 print(np.shape(X_regLasso))
 
@@ -68,13 +68,51 @@ for k in np.arange(X_regLasso.shape[1]): #numLabels
 print(np.shape(X_Average))
 
 n_important = 10
-TopTen_ind = np.zeros((LabelTrain.shape[1],n_important)) # axis = 0 represents each of the different labels, the indices of the pixels with the largest weightings for the respective label are stored in ascending order along axis = 1
+TopTen_ind = np.zeros((LabelTrain.shape[1],n_important),dtype=int) # axis = 0 represents each of the different labels with the same interpretation of ("1","2",..."0"), the indices of the pixels with the largest weightings for the respective label are stored in ascending order along axis = 1
 for i in np.arange(X_Average.shape[0]):
     temp_array = X_Average[i,:]
     temp_ind = np.argpartition(temp_array,-10)[-10:]
     TopTen_ind[i,:] = temp_ind[np.argsort(temp_array[temp_ind])] # https://stackoverflow.com/questions/6910641/how-do-i-get-indices-of-n-maximum-values-in-a-numpy-array
 
 print(TopTen_ind)
+
+"""
+Apply most important pixels to test dataset
+"""
+ImageTest_full = idx2numpy.convert_from_file(file_ImageTest)
+LabelTest_full = idx2numpy.convert_from_file(file_LabelTest)
+
+numPixels = ImageTest_full.shape[1] # images are square and isotropic
+
+ImageTest = np.zeros((10,numPixels,numPixels)) # 10 is the number of basic objects
+LabelTest = np.zeros((10,1), dtype=int)
+
+n_LongEnough = 100 # Just need enough iterations to get one of each object
+
+for i in np.arange(n_LongEnough):
+    ImageTest[(LabelTest_full[i]+9) % 10,:,:] = ImageTest_full[i,:,:] # must be consistent with ("1","2",..."0") interpretation
+    LabelTest[(LabelTest_full[i]+9) % 10] = LabelTest_full[i]
+
+# Transform MNIST labels to our labels, defined in assignment
+Label_temp = np.zeros((LabelTest.shape[0],10))
+for k in np.arange(LabelTest.shape[0]):
+    Label_temp[k,(LabelTest[k]+9) % 10] = 1
+
+LabelTest = Label_temp
+
+ImageTest = ImageTest.reshape((ImageTest.shape[0],numPixels*numPixels))
+ImageTest_TopTen = np.zeros((ImageTest.shape[0],numPixels*numPixels)) # reshaped images with just the most important pixels
+
+for k in np.arange(ImageTest_TopTen.shape[0]):
+    for l in np.arange(TopTen_ind.shape[1]):
+        ImageTest_TopTen[k,TopTen_ind[k,l]] = ImageTest[k,TopTen_ind[k,l]]
+
+## Predict using most important pixels
+LabelPrediction_lam = np.zeros((lam.shape[0],sizeLabels,sizeLabels))
+for i in np.arange(LabelPrediction_lam.shape[0]):
+    LabelPrediction_lam[i,:,:] = np.matmul(ImageTest_TopTen,X_regLasso[i,:,:].T)
+
+print(LabelPrediction_lam)
 
 """
 Plotting
@@ -116,5 +154,15 @@ figLasso.tight_layout()
 
 figAverage = plt.figure(2)
 plt.pcolor(X_Average)
+
+figPredict, axs = plt.subplots(6,2)
+for j in np.arange(axs.shape[0]):
+    ax = axs[j,0]
+    c = ax.pcolor(LabelPrediction_lam[j,:,:]/np.amax(LabelPrediction_lam[j,:,:]))
+    figPredict.colorbar(c, ax=ax)
+    ax = axs[j,1]
+    c = ax.pcolor(LabelTest)
+
+plt.subplots_adjust(hspace = 0.5)
 
 plt.show()
