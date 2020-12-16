@@ -20,7 +20,6 @@ file_LabelTest = 't10k-labels-idx1-ubyte'
 ImageTrain_full = idx2numpy.convert_from_file(file_ImageTrain)
 LabelTrain_full = idx2numpy.convert_from_file(file_LabelTrain)
 
-
 numSamples = 50
 numPixels = ImageTrain_full.shape[1] # images are square and isotropic
 TrainSamples = ImageTrain_full.shape[0]
@@ -122,47 +121,70 @@ figLasso, axs = plt.subplots(2,3)
 ax = axs[0,0]
 c = ax.pcolor(X_regLasso[0,:,:]/np.amax(X_regLasso[0,:,:]))
 ax.set_title('Lambda = %1f' %lam[0])
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figLasso.colorbar(c, ax=ax)
 
 ax = axs[0,1]
 c = ax.pcolor(X_regLasso[1,:,:]/np.amax(X_regLasso[1,:,:]))
 ax.set_title('Lambda = %1f' %lam[1])
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figLasso.colorbar(c, ax=ax)
 
 ax = axs[0,2]
 c = ax.pcolor(X_regLasso[2,:,:]/np.amax(X_regLasso[2,:,:]))
 ax.set_title('Lambda = %1f' %lam[2])
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figLasso.colorbar(c, ax=ax)
 
 ax = axs[1,0]
 c = ax.pcolor(X_regLasso[3,:,:]/np.amax(X_regLasso[3,:,:]))
 ax.set_title('Lambda = %1f' %lam[3])
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figLasso.colorbar(c, ax=ax)
 
 ax = axs[1,1]
 c = ax.pcolor(X_regLasso[4,:,:]/np.amax(X_regLasso[4,:,:]))
 ax.set_title('Lambda = %1f' %lam[4])
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figLasso.colorbar(c, ax=ax)
 
 ax = axs[1,2]
 c = ax.pcolor(X_regLasso[5,:,:]/np.amax(X_regLasso[5,:,:]))
 ax.set_title('Lambda = %1f' %lam[5])
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figLasso.colorbar(c, ax=ax)
 
 figLasso.suptitle('Loadings for LASSO with different regularizations')
 figLasso.tight_layout()
+plt.subplots_adjust(wspace=0.2, hspace=0.5)
 
 figAverage = plt.figure(2)
 plt.pcolor(X_Average)
+plt.title('Average Weight for each pixel w.r.t a given label')
+plt.xlabel('Pixel')
+plt.ylabel('Particular Label')
 
 figPredict, axs = plt.subplots(6,2)
 for j in np.arange(axs.shape[0]):
     ax = axs[j,0]
     c = ax.pcolor(LabelPrediction_lam[j,:,:]/np.amax(LabelPrediction_lam[j,:,:]))
     figPredict.colorbar(c, ax=ax)
+    if j == 0:
+        ax.set_title('Top Ten Label Prediction')
+        ax.set_ylabel('Particular Label')
     ax = axs[j,1]
     c = ax.pcolor(LabelTest)
+    if j == 0:
+        ax.set_title('Label Solution')
+        ax.set_ylabel('Particular Label')
 
+figPredict.suptitle('Prediction accuracy using Top Ten Method')
 plt.subplots_adjust(hspace = 0.5)
 
 plt.show()

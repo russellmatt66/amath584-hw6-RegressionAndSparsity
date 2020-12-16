@@ -94,22 +94,30 @@ figReg, axs = plt.subplots(2,2)
 
 ax = axs[0,0]
 c = ax.pcolor(x_pseudoinv.T/np.amax(x_pseudoinv))
-ax.set_title('Pseudo-Inverse')
+ax.set_title('Pseudo-Inverse Weights')
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figReg.colorbar(c, ax=ax)
 
 ax = axs[0,1]
 c = ax.pcolor(x_regLS/np.amax(x_regLS))
-ax.set_title('Least-Squares Regression')
+ax.set_title('Least-Squares Regression Weights')
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figReg.colorbar(c, ax=ax)
 
 ax = axs[1,0]
 c = ax.pcolor(x_regRidge/np.amax(x_regRidge))
-ax.set_title('Ridge Regression')
+ax.set_title('Ridge Regression Weights')
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figReg.colorbar(c, ax=ax)
 
 ax = axs[1,1]
 c = ax.pcolor(x_regLasso/np.amax(x_regLasso))
-ax.set_title('LASSO')
+ax.set_title('LASSO Weights')
+ax.set_xlabel('Pixel')
+ax.set_ylabel('Particular Label')
 figReg.colorbar(c, ax=ax)
 
 figReg.suptitle('Normalized Loadings for Several Different Regression Methods')
